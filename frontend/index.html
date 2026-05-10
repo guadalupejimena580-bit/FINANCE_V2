@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FINANCE — Tu sistema financiero</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #1B4332;
+    --green-mid: #2D6A4F;
+    --green-light: #52B788;
+    --green-pale: #B7E4C7;
+    --green-mist: #D8F3DC;
+    --green-cream: #F0FAF2;
+    --white: #FFFFFF;
+    --text-dark: #0D2E1C;
+    --text-mid: #2D5A3D;
+    --text-soft: #5B8C6E;
+    --text-muted: #8FAF9A;
+    --amber: #D4A017;
+    --amber-light: #FFF3CD;
+    --red: #C0392B;
+    --red-light: #FDEDEC;
+    --bark: #6B4F3A;
+    --bark-light: #F5EDDE;
+    --blue-light: #E3F2FD;
+    --border: #C8E6D0;
+    --border-light: #E8F5EC;
+    --shadow: 0 4px 24px rgba(27,67,50,0.10);
+    --shadow-hover: 0 8px 32px rgba(27,67,50,0.18);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--green-cream); color:var(--text-dark); min-height:100vh; overflow-x:hidden; }
+
+  /* ── LAYOUT ── */
+  .layout { display:flex; min-height:100vh; }
+  .sidebar {
+    width:260px; background:var(--green-dark);
+    display:flex; flex-direction:column;
+    position:fixed; top:0; left:0; bottom:0; z-index:100; overflow-y:auto;
+  }
+  .sidebar-brand { padding:28px 24px 20px; border-bottom:1px solid rgba(255,255,255,0.08); }
+  .brand-logo { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .panda-avatar {
+    width:48px; height:48px; border-radius:50%;
+    background:var(--white); display:flex; align-items:center; justify-content:center;
+    overflow:hidden; flex-shrink:0; border:2px solid var(--green-light);
+  }
+  .brand-text h1 { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--white); letter-spacing:2px; }
+  .brand-text span { font-size:11px; color:var(--green-pale); letter-spacing:1px; text-transform:uppercase; }
+  .nav-section { padding:20px 16px 8px; }
+  .nav-label { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:rgba(183,228,199,0.5); padding:0 8px; margin-bottom:8px; }
+  .nav-item {
+    display:flex; align-items:center; gap:12px; padding:11px 12px;
+    border-radius:var(--radius-sm); cursor:pointer; transition:all 0.2s;
+    color:rgba(255,255,255,0.7); font-size:14px; font-weight:400; margin-bottom:2px; text-decoration:none;
+  }
+  .nav-item:hover { background:rgba(255,255,255,0.08); color:var(--white); }
+  .nav-item.active { background:var(--green-light); color:var(--white); font-weight:500; }
+  .nav-item svg { width:20px; height:20px; flex-shrink:0; opacity:0.8; }
+  .nav-item.active svg { opacity:1; }
+  .sidebar-footer { margin-top:auto; padding:20px; border-top:1px solid rgba(255,255,255,0.08); }
+  .panda-quote { display:flex; align-items:flex-start; gap:10px; background:rgba(255,255,255,0.06); border-radius:12px; padding:12px; }
+  .panda-mini { width:32px; height:32px; border-radius:50%; overflow:hidden; flex-shrink:0; background:var(--white); }
+  .panda-quote p { font-size:11px; color:var(--green-pale); line-height:1.5; font-style:italic; }
+  .sidebar-status { font-size:10px; padding:4px 8px; border-radius:50px; margin-top:8px; display:inline-flex; align-items:center; gap:4px; }
+  .status-ok  { background:rgba(82,183,136,0.2); color:var(--green-pale); }
+  .status-err { background:rgba(192,57,43,0.2);  color:#f1948a; }
+  .status-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+  /* ── MAIN ── */
+  .main { margin-left:260px; flex:1; padding:32px; min-height:100vh; }
+  .page { display:none; }
+  .page.active { display:block; animation:fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  /* ── HEADERS ── */
+  .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; }
+  .page-title { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; color:var(--green-dark); }
+  .page-subtitle { font-size:14px; color:var(--text-soft); margin-top:2px; }
+  .page-header-actions { display:flex; gap:10px; }
+
+  /* ── BUTTONS ── */
+  .btn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:50px; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; transition:all 0.2s; }
+  .btn-primary { background:var(--green-dark); color:var(--white); }
+  .btn-primary:hover { background:var(--green-mid); box-shadow:var(--shadow); transform:translateY(-1px); }
+  .btn-primary:disabled { background:#aaa; cursor:not-allowed; transform:none; }
+  .btn-outline { background:transparent; color:var(--green-dark); border:1.5px solid var(--border); }
+  .btn-outline:hover { background:var(--green-mist); }
+  .btn-danger { background:var(--red-light); color:var(--red); border:1px solid rgba(192,57,43,0.2); }
+  .btn-danger:hover { background:#fbdbd9; }
+  .btn-amber { background:var(--amber-light); color:#8B6914; border:1px solid rgba(212,160,23,0.2); }
+  .btn-amber:hover { background:#fdeaa8; }
+  .btn-sm { padding:6px 14px; font-size:13px; }
+  .btn-xs { padding:4px 10px; font-size:12px; }
+
+  /* ── CARDS ── */
+  .card { background:var(--white); border-radius:var(--radius); border:1px solid var(--border-light); padding:24px; box-shadow:var(--shadow); }
+  .card-sm { padding:16px 20px; }
+
+  /* ── GRIDS ── */
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+
+  /* ── STAT CARDS ── */
+  .stat-card { background:var(--white); border-radius:var(--radius); border:1px solid var(--border-light); padding:20px; display:flex; flex-direction:column; gap:8px; }
+  .stat-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; margin-bottom:4px; font-size:18px; }
+  .stat-icon.green { background:var(--green-mist); }
+  .stat-icon.red   { background:var(--red-light); }
+  .stat-icon.amber { background:var(--amber-light); }
+  .stat-icon.bark  { background:var(--bark-light); }
+  .stat-icon.blue  { background:var(--blue-light); }
+  .stat-label { font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); font-weight:500; }
+  .stat-value { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; color:var(--green-dark); line-height:1; }
+  .stat-value.neg  { color:var(--red); }
+  .stat-value.warn { color:var(--amber); }
+  .stat-trend { font-size:12px; color:var(--text-soft); }
+
+  /* ── FORMS ── */
+  .form-group { margin-bottom:16px; }
+  .form-group label { display:block; font-size:13px; font-weight:500; color:var(--text-mid); margin-bottom:6px; }
+  .form-group input,.form-group select,.form-group textarea {
+    width:100%; padding:10px 14px; border:1.5px solid var(--border);
+    border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:14px;
+    color:var(--text-dark); background:var(--white); transition:border-color 0.2s; outline:none;
+  }
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus {
+    border-color:var(--green-light); box-shadow:0 0 0 3px rgba(82,183,136,0.15);
+  }
+  .form-row { display:flex; gap:16px; }
+  .form-row .form-group { flex:1; }
+  .field-error { font-size:12px; color:var(--red); margin-top:4px; }
+
+  /* ── MODAL ── */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(13,46,28,0.5); z-index:200; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+  .modal-overlay.active { display:flex; animation:fadeIn 0.2s ease; }
+  .modal { background:var(--white); border-radius:20px; padding:32px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(27,67,50,0.25); }
+  .modal-lg { max-width:600px; }
+  .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+  .modal-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--green-dark); }
+  .modal-close { width:32px; height:32px; border-radius:50%; border:1.5px solid var(--border); background:var(--white); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--text-soft); transition:all 0.2s; }
+  .modal-close:hover { background:var(--red-light); color:var(--red); border-color:var(--red); }
+
+  /* ── ACCOUNT CARDS ── */
+  .account-card { background:var(--white); border-radius:var(--radius); border:1px solid var(--border-light); padding:20px 24px; display:flex; align-items:center; gap:16px; transition:all 0.2s; }
+  .account-card:hover { border-color:var(--green-light); box-shadow:var(--shadow-hover); transform:translateY(-2px); }
+  .account-icon { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+  .account-icon.debito  { background:var(--green-mist); }
+  .account-icon.credito { background:var(--amber-light); }
+  .account-icon.ahorro  { background:var(--blue-light); }
+  .account-icon.efectivo{ background:var(--bark-light); }
+  .account-info { flex:1; }
+  .account-name { font-size:15px; font-weight:600; color:var(--text-dark); }
+  .account-type { font-size:12px; color:var(--text-muted); margin-top:2px; display:flex; align-items:center; gap:8px; }
+  .account-balance { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--green-dark); }
+  .account-balance.neg { color:var(--red); }
+  .account-actions { display:flex; gap:6px; flex-shrink:0; }
+
+  /* ── LIST ITEMS ── */
+  .list-item { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--border-light); }
+  .list-item:last-child { border-bottom:none; }
+  .list-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .list-dot.gasto   { background:var(--red); }
+  .list-dot.deuda   { background:var(--amber); }
+  .list-dot.ingreso { background:var(--green-light); }
+  .list-desc { flex:1; min-width:0; }
+  .list-desc .title { font-size:14px; font-weight:500; color:var(--text-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .list-desc .sub   { font-size:12px; color:var(--text-muted); margin-top:2px; }
+  .list-amount { font-size:15px; font-weight:600; flex-shrink:0; }
+  .list-amount.neg  { color:var(--red); }
+  .list-amount.warn { color:var(--amber); }
+  .list-amount.pos  { color:var(--green-mid); }
+
+  /* ── REMINDER CARDS ── */
+  .reminder-card { background:var(--white); border-radius:var(--radius); border:1px solid var(--border-light); padding:18px 20px; display:flex; align-items:center; gap:16px; transition:box-shadow 0.2s; }
+  .reminder-card.urgent { border-left:4px solid var(--red); }
+  .reminder-card.soon   { border-left:4px solid var(--amber); }
+  .reminder-card.ok     { border-left:4px solid var(--green-light); }
+  .reminder-day { width:48px; height:48px; border-radius:12px; background:var(--green-mist); display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; }
+  .reminder-day .day-num { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:var(--green-dark); line-height:1; }
+  .reminder-day .day-label { font-size:9px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-soft); }
+  .reminder-info { flex:1; }
+  .reminder-name { font-size:14px; font-weight:600; color:var(--text-dark); }
+  .reminder-sub  { font-size:12px; color:var(--text-muted); margin-top:2px; }
+  .reminder-amount { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:var(--text-dark); flex-shrink:0; }
+
+  /* ── BADGE ── */
+  .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:50px; font-size:11px; font-weight:600; letter-spacing:0.3px; }
+  .badge-green { background:var(--green-mist); color:var(--green-mid); }
+  .badge-red   { background:var(--red-light);  color:var(--red); }
+  .badge-amber { background:var(--amber-light); color:#8B6914; }
+  .badge-blue  { background:var(--blue-light);  color:#1565C0; }
+  .badge-bark  { background:var(--bark-light);  color:var(--bark); }
+
+  /* ── PROGRESS ── */
+  .progress-bar { height:8px; background:var(--green-mist); border-radius:50px; overflow:hidden; margin-top:8px; }
+  .progress-fill { height:100%; border-radius:50px; background:var(--green-light); transition:width 0.5s ease; }
+  .progress-fill.danger { background:var(--red); }
+  .progress-fill.warn   { background:var(--amber); }
+
+  /* ── SECTION TITLE ── */
+  .section-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:var(--green-dark); margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .section-title-left { display:flex; align-items:center; gap:8px; }
+
+  /* ── TABLE ── */
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); font-weight:600; padding:0 16px 12px; border-bottom:1.5px solid var(--border-light); }
+  td { padding:13px 16px; font-size:14px; color:var(--text-dark); border-bottom:1px solid var(--border-light); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:var(--green-cream); }
+
+  /* ── NATURE BANNER ── */
+  .nature-banner { background:linear-gradient(135deg,var(--green-dark) 0%,var(--green-mid) 100%); border-radius:var(--radius); padding:28px 32px; display:flex; align-items:center; gap:24px; margin-bottom:24px; position:relative; overflow:hidden; }
+  .nature-banner::before { content:'🌿'; position:absolute; right:24px; bottom:-10px; font-size:80px; opacity:0.2; }
+  .nature-banner::after  { content:'🍃'; position:absolute; right:100px; top:8px; font-size:40px; opacity:0.15; transform:rotate(-20deg); }
+  .nature-banner .panda-hero { width:64px; height:64px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; border:3px solid rgba(255,255,255,0.4); }
+  .nature-banner h2 { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--white); }
+  .nature-banner p  { font-size:14px; color:var(--green-pale); margin-top:4px; }
+
+  /* ── CHART ── */
+  .chart-bar-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .chart-label { font-size:12px; color:var(--text-soft); width:120px; text-align:right; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chart-bar-wrap { flex:1; height:22px; background:var(--green-mist); border-radius:50px; overflow:hidden; }
+  .chart-bar-fill { height:100%; border-radius:50px; background:var(--green-light); transition:width 0.6s ease; }
+  .chart-value { font-size:12px; font-weight:600; color:var(--text-mid); width:100px; flex-shrink:0; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align:center; padding:48px 24px; color:var(--text-muted); }
+  .empty-state .es-emoji { font-size:48px; margin-bottom:12px; }
+  .empty-state p { font-size:14px; }
+
+  /* ── LOADING ── */
+  .loading { text-align:center; padding:40px; color:var(--text-muted); font-size:14px; }
+  .spinner { width:32px; height:32px; border:3px solid var(--green-mist); border-top-color:var(--green-light); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 12px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* ── TOAST ── */
+  .toast { position:fixed; bottom:32px; right:32px; background:var(--green-dark); color:var(--white); padding:14px 20px; border-radius:12px; font-size:14px; font-weight:500; box-shadow:var(--shadow); z-index:999; display:flex; align-items:center; gap:10px; transform:translateY(80px); opacity:0; transition:all 0.3s ease; max-width:360px; }
+  .toast.show  { transform:none; opacity:1; }
+  .toast.error { background:var(--red); }
+  .toast.warn  { background:var(--amber); }
+
+  /* ── LEAF DECO ── */
+  .leaf-deco { position:fixed; pointer-events:none; opacity:0.04; z-index:0; }
+
+  /* ── FILTER BAR ── */
+  .filter-bar { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+  .filter-bar select, .filter-bar input { padding:8px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:13px; color:var(--text-dark); background:var(--white); outline:none; }
+  .filter-bar select:focus, .filter-bar input:focus { border-color:var(--green-light); }
+
+  /* ── DIVIDER ── */
+  .divider { height:1px; background:var(--border-light); margin:20px 0; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width:900px) {
+    .sidebar { width:220px; }
+    .main { margin-left:220px; padding:20px; }
+    .grid-4 { grid-template-columns:1fr 1fr; }
+    .grid-3 { grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:640px) {
+    .sidebar { transform:translateX(-100%); }
+    .main { margin-left:0; }
+    .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; }
+  }
+
+  /* ── AUTH SCREENS ── */
+  .auth-overlay {
+    position:fixed; inset:0; background:var(--green-cream);
+    display:flex; align-items:center; justify-content:center;
+    z-index:9999; padding:20px;
+  }
+  .auth-overlay.hidden { display:none; }
+  .auth-box {
+    background:var(--white); border-radius:24px; padding:48px 40px;
+    max-width:420px; width:100%; box-shadow:0 16px 64px rgba(27,67,50,0.16);
+    border:1px solid var(--border);
+  }
+  .auth-logo { display:flex; align-items:center; gap:12px; margin-bottom:32px; }
+  .auth-logo h1 { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; color:var(--green-dark); letter-spacing:2px; }
+  .auth-logo span { font-size:11px; color:var(--text-soft); letter-spacing:1px; text-transform:uppercase; }
+  .auth-title { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--text-dark); margin-bottom:6px; }
+  .auth-subtitle { font-size:14px; color:var(--text-soft); margin-bottom:28px; }
+  .auth-form .form-group { margin-bottom:16px; }
+  .auth-form label { font-size:13px; font-weight:500; color:var(--text-mid); margin-bottom:6px; display:block; }
+  .auth-form input {
+    width:100%; padding:12px 16px; border:1.5px solid var(--border);
+    border-radius:12px; font-family:'DM Sans',sans-serif; font-size:14px;
+    color:var(--text-dark); background:var(--white); transition:border-color 0.2s;
+    outline:none;
+  }
+  .auth-form input:focus { border-color:var(--green-light); }
+  .auth-btn {
+    width:100%; padding:14px; background:var(--green-dark); color:var(--white);
+    border:none; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px;
+    font-weight:600; cursor:pointer; transition:all 0.2s; margin-top:8px;
+  }
+  .auth-btn:hover { background:var(--green-mid); box-shadow:var(--shadow); }
+  .auth-btn:disabled { background:#aaa; cursor:not-allowed; }
+  .auth-switch { text-align:center; margin-top:20px; font-size:13px; color:var(--text-soft); }
+  .auth-switch a { color:var(--green-mid); font-weight:500; cursor:pointer; text-decoration:none; }
+  .auth-switch a:hover { text-decoration:underline; }
+  .auth-error { background:var(--red-light); color:var(--red); border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:16px; display:none; }
+  .auth-error.show { display:block; }
+
+  /* ── USER INFO en sidebar ── */
+  .sidebar-user { padding:12px 16px; margin:0 8px 8px; background:rgba(255,255,255,0.08); border-radius:12px; }
+  .sidebar-user-name { font-size:13px; font-weight:500; color:var(--white); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .sidebar-user-email { font-size:11px; color:var(--green-pale); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px; }
+  .btn-logout {
+    display:flex; align-items:center; gap:8px; width:100%; padding:9px 12px;
+    background:rgba(192,57,43,0.15); color:#f1948a; border:none; border-radius:10px;
+    cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500;
+    transition:all 0.2s; margin-top:8px;
+  }
+  .btn-logout:hover { background:rgba(192,57,43,0.25); }
+  .btn-logout svg { width:16px; height:16px; }
+
+</style>
+
+</head>
+<body>
+
+<!-- ═══════════ AUTH OVERLAY ═══════════ -->
+<div id="auth-overlay" class="auth-overlay">
+  <!-- LOGIN -->
+  <div id="auth-login" class="auth-box">
+    <div class="auth-logo">
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--green-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="38" height="38">
+          <ellipse cx="50" cy="62" rx="28" ry="26" fill="#C0392B"/><ellipse cx="50" cy="38" rx="24" ry="22" fill="#D94F3D"/>
+          <ellipse cx="28" cy="20" rx="9" ry="9" fill="#C0392B"/><ellipse cx="72" cy="20" rx="9" ry="9" fill="#C0392B"/>
+          <ellipse cx="28" cy="20" rx="5" ry="5" fill="#2D2D2D"/><ellipse cx="72" cy="20" rx="5" ry="5" fill="#2D2D2D"/>
+          <ellipse cx="50" cy="42" rx="18" ry="15" fill="#F5E6C8"/>
+          <ellipse cx="41" cy="36" rx="6" ry="6" fill="#2D2D2D"/><ellipse cx="59" cy="36" rx="6" ry="6" fill="#2D2D2D"/>
+          <circle cx="42.5" cy="34.5" r="2" fill="white"/><circle cx="60.5" cy="34.5" r="2" fill="white"/>
+          <ellipse cx="50" cy="44" rx="4" ry="3" fill="#2D2D2D"/>
+          <path d="M45 49 Q50 54 55 49" stroke="#2D2D2D" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+      <div><h1>FINANCE</h1><span>Tu bienestar financiero</span></div>
+    </div>
+    <h2 class="auth-title">Bienvenido de nuevo</h2>
+    <p class="auth-subtitle">Iniciá sesión para acceder a tus finanzas</p>
+    <div id="login-error" class="auth-error"></div>
+    <div class="auth-form">
+      <div class="form-group">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="login-password">Contraseña</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="auth-btn" id="btn-login" onclick="doLogin()">Iniciar sesión</button>
+    </div>
+    <p class="auth-switch">¿No tenés cuenta? <a onclick="showAuthScreen('register')">Registrate</a></p>
+  </div>
+
+  <!-- REGISTRO -->
+  <div id="auth-register" class="auth-box" style="display:none;">
+    <div class="auth-logo">
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--green-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="38" height="38">
+          <ellipse cx="50" cy="62" rx="28" ry="26" fill="#C0392B"/><ellipse cx="50" cy="38" rx="24" ry="22" fill="#D94F3D"/>
+          <ellipse cx="28" cy="20" rx="9" ry="9" fill="#C0392B"/><ellipse cx="72" cy="20" rx="9" ry="9" fill="#C0392B"/>
+          <ellipse cx="28" cy="20" rx="5" ry="5" fill="#2D2D2D"/><ellipse cx="72" cy="20" rx="5" ry="5" fill="#2D2D2D"/>
+          <ellipse cx="50" cy="42" rx="18" ry="15" fill="#F5E6C8"/>
+          <ellipse cx="41" cy="36" rx="6" ry="6" fill="#2D2D2D"/><ellipse cx="59" cy="36" rx="6" ry="6" fill="#2D2D2D"/>
+          <circle cx="42.5" cy="34.5" r="2" fill="white"/><circle cx="60.5" cy="34.5" r="2" fill="white"/>
+          <ellipse cx="50" cy="44" rx="4" ry="3" fill="#2D2D2D"/>
+          <path d="M45 49 Q50 54 55 49" stroke="#2D2D2D" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+      <div><h1>FINANCE</h1><span>Tu bienestar financiero</span></div>
+    </div>
+    <h2 class="auth-title">Crear cuenta</h2>
+    <p class="auth-subtitle">Empezá a controlar tus finanzas hoy</p>
+    <div id="register-error" class="auth-error"></div>
+    <div class="auth-form">
+      <div class="form-group">
+        <label for="reg-nombre">Nombre</label>
+        <input type="text" id="reg-nombre" placeholder="Tu nombre" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label for="reg-email">Email</label>
+        <input type="email" id="reg-email" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="reg-password">Contraseña <span style="font-size:11px;color:var(--text-muted)">(mínimo 6 caracteres)</span></label>
+        <input type="password" id="reg-password" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <button class="auth-btn" id="btn-register" onclick="doRegister()">Crear cuenta</button>
+    </div>
+    <p class="auth-switch">¿Ya tenés cuenta? <a onclick="showAuthScreen('login')">Iniciá sesión</a></p>
+  </div>
+</div>
+
+<!-- ═══════════ APP (oculta hasta auth) ═══════════ -->
+<div id="app-wrapper" class="layout" style="display:none;">
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo">
+      <div class="panda-avatar">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="44" height="44">
+          <ellipse cx="50" cy="62" rx="28" ry="26" fill="#C0392B"/>
+          <ellipse cx="50" cy="38" rx="24" ry="22" fill="#D94F3D"/>
+          <ellipse cx="28" cy="20" rx="9" ry="9" fill="#C0392B"/>
+          <ellipse cx="72" cy="20" rx="9" ry="9" fill="#C0392B"/>
+          <ellipse cx="28" cy="20" rx="5" ry="5" fill="#2D2D2D"/>
+          <ellipse cx="72" cy="20" rx="5" ry="5" fill="#2D2D2D"/>
+          <ellipse cx="50" cy="42" rx="18" ry="15" fill="#F5E6C8"/>
+          <ellipse cx="41" cy="36" rx="6" ry="6" fill="#2D2D2D"/>
+          <ellipse cx="59" cy="36" rx="6" ry="6" fill="#2D2D2D"/>
+          <circle cx="42.5" cy="34.5" r="2" fill="white"/>
+          <circle cx="60.5" cy="34.5" r="2" fill="white"/>
+          <ellipse cx="50" cy="44" rx="4" ry="3" fill="#2D2D2D"/>
+          <line x1="32" y1="44" x2="46" y2="45" stroke="#2D2D2D" stroke-width="1.2"/>
+          <line x1="32" y1="47" x2="46" y2="46" stroke="#2D2D2D" stroke-width="1.2"/>
+          <line x1="54" y1="45" x2="68" y2="44" stroke="#2D2D2D" stroke-width="1.2"/>
+          <line x1="54" y1="46" x2="68" y2="47" stroke="#2D2D2D" stroke-width="1.2"/>
+          <path d="M45 49 Q50 54 55 49" stroke="#2D2D2D" stroke-width="1.5" fill="none"/>
+          <ellipse cx="76" cy="72" rx="8" ry="18" fill="#C0392B" transform="rotate(30 76 72)"/>
+          <ellipse cx="76" cy="72" rx="4" ry="6" fill="#F5E6C8" transform="rotate(30 76 72)"/>
+        </svg>
+      </div>
+      <div class="brand-text"><h1>FINANCE</h1><span>Tu bienestar financiero</span></div>
+    </div>
+    <div id="api-status" class="sidebar-status status-err"><span class="status-dot"></span>Conectando...</div>
+  </div>
+
+  <nav class="nav-section">
+    <p class="nav-label">Inicio</p>
+    <a class="nav-item active" onclick="navigate('dashboard')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard
+    </a>
+  </nav>
+
+  <nav class="nav-section">
+    <p class="nav-label">Gestión</p>
+    <a class="nav-item" onclick="navigate('cuentas')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Mis Cuentas
+    </a>
+    <a class="nav-item" onclick="navigate('gastos')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Gastos
+    </a>
+    <a class="nav-item" onclick="navigate('deudas')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Deudas
+    </a>
+    <a class="nav-item" onclick="navigate('recordatorios')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Recordatorios
+    </a>
+  </nav>
+
+  <nav class="nav-section">
+    <p class="nav-label">Análisis</p>
+    <a class="nav-item" onclick="navigate('resumen')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Resumen General
+    </a>
+  </nav>
+
+    <div class="sidebar-footer">
+    <div class="sidebar-user" id="sidebar-user-info">
+      <div class="sidebar-user-name" id="sidebar-nombre">Usuario</div>
+      <div class="sidebar-user-email" id="sidebar-email">email@ejemplo.com</div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Cerrar sesión
+    </button>
+    <div class="panda-quote" style="margin-top:10px;">
+      <div class="panda-mini">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+          <ellipse cx="50" cy="62" rx="28" ry="26" fill="#C0392B"/>
+          <ellipse cx="50" cy="38" rx="24" ry="22" fill="#D94F3D"/>
+          <ellipse cx="28" cy="20" rx="9"  ry="9"  fill="#C0392B"/>
+          <ellipse cx="72" cy="20" rx="9"  ry="9"  fill="#C0392B"/>
+          <ellipse cx="28" cy="20" rx="5"  ry="5"  fill="#2D2D2D"/>
+          <ellipse cx="72" cy="20" rx="5"  ry="5"  fill="#2D2D2D"/>
+          <ellipse cx="50" cy="42" rx="18" ry="15" fill="#F5E6C8"/>
+          <ellipse cx="41" cy="36" rx="6"  ry="6"  fill="#2D2D2D"/>
+          <ellipse cx="59" cy="36" rx="6"  ry="6"  fill="#2D2D2D"/>
+          <circle cx="42.5" cy="34.5" r="2" fill="white"/>
+          <circle cx="60.5" cy="34.5" r="2" fill="white"/>
+          <ellipse cx="50" cy="44" rx="4" ry="3" fill="#2D2D2D"/>
+          <path d="M45 49 Q50 54 55 49" stroke="#2D2D2D" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+      <p>"Pequeños pasos hacia grandes ahorros 🌱"</p>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<main class="main">
+
+<!-- ══ DASHBOARD ══ -->
+<div id="page-dashboard" class="page active">
+  <div class="nature-banner">
+    <div class="panda-hero">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+        <ellipse cx="50" cy="62" rx="28" ry="26" fill="#C0392B"/>
+        <ellipse cx="50" cy="38" rx="24" ry="22" fill="#D94F3D"/>
+        <ellipse cx="28" cy="20" rx="9" ry="9" fill="#C0392B"/><ellipse cx="72" cy="20" rx="9" ry="9" fill="#C0392B"/>
+        <ellipse cx="28" cy="20" rx="5" ry="5" fill="#2D2D2D"/><ellipse cx="72" cy="20" rx="5" ry="5" fill="#2D2D2D"/>
+        <ellipse cx="50" cy="42" rx="18" ry="15" fill="#F5E6C8"/>
+        <ellipse cx="41" cy="36" rx="6" ry="6" fill="#2D2D2D"/><ellipse cx="59" cy="36" rx="6" ry="6" fill="#2D2D2D"/>
+        <circle cx="42.5" cy="34.5" r="2" fill="white"/><circle cx="60.5" cy="34.5" r="2" fill="white"/>
+        <ellipse cx="50" cy="44" rx="4" ry="3" fill="#2D2D2D"/>
+        <path d="M45 49 Q50 54 55 49" stroke="#2D2D2D" stroke-width="1.5" fill="none"/>
+        <ellipse cx="76" cy="72" rx="8" ry="18" fill="#C0392B" transform="rotate(30 76 72)"/>
+        <ellipse cx="76" cy="72" rx="4" ry="6" fill="#F5E6C8" transform="rotate(30 76 72)"/>
+      </svg>
+    </div>
+    <div>
+      <h2 id="dash-greeting">¡Bienvenido a FINANCE!</h2>
+      <p id="dash-date">Cargando datos...</p>
+    </div>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:24px">
+    <div class="stat-card"><div class="stat-icon green">💰</div><div class="stat-label">Balance Total</div><div class="stat-value" id="s-balance">₲ 0</div><div class="stat-trend">Todas las cuentas activas</div></div>
+    <div class="stat-card"><div class="stat-icon red">📉</div><div class="stat-label">Gastos del Mes</div><div class="stat-value neg" id="s-gastos">₲ 0</div><div class="stat-trend">Mes actual</div></div>
+    <div class="stat-card"><div class="stat-icon amber">⚠️</div><div class="stat-label">Deudas Pendientes</div><div class="stat-value warn" id="s-deudas">₲ 0</div><div class="stat-trend">Saldo por pagar</div></div>
+    <div class="stat-card"><div class="stat-icon blue">🏦</div><div class="stat-label">Patrimonio Neto</div><div class="stat-value" id="s-patrimonio">₲ 0</div><div class="stat-trend">Activos − Deudas</div></div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:24px">
+    <div class="card">
+      <div class="section-title"><span class="section-title-left">🏦 Mis Cuentas</span></div>
+      <div id="dash-cuentas"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+    </div>
+    <div class="card">
+      <div class="section-title"><span class="section-title-left">📅 Próximos Pagos</span></div>
+      <div id="dash-recs"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title"><span class="section-title-left">📋 Últimos Movimientos</span></div>
+    <div id="dash-movs"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+  </div>
+</div>
+
+<!-- ══ CUENTAS ══ -->
+<div id="page-cuentas" class="page">
+  <div class="page-header">
+    <div><h2 class="page-title">Mis Cuentas</h2><p class="page-subtitle">Gestiona tus cuentas financieras</p></div>
+    <div class="page-header-actions">
+      <button class="btn btn-outline" onclick="openModal('modal-transferencia')">⇄ Transferir</button>
+      <button class="btn btn-primary" onclick="openModal('modal-cuenta')">+ Nueva Cuenta</button>
+    </div>
+  </div>
+  <div id="lista-cuentas" style="display:flex;flex-direction:column;gap:12px">
+    <div class="loading card"><div class="spinner"></div>Cargando cuentas...</div>
+  </div>
+</div>
+
+<!-- ══ GASTOS ══ -->
+<div id="page-gastos" class="page">
+  <div class="page-header">
+    <div><h2 class="page-title">Gastos</h2><p class="page-subtitle">Registra y controla tus egresos</p></div>
+    <button class="btn btn-primary" onclick="openModal('modal-gasto')">+ Registrar Gasto</button>
+  </div>
+  <div class="filter-bar">
+    <select id="filtro-cat" onchange="renderGastos()">
+      <option value="">Todas las categorías</option>
+      <option>Alimentación</option><option>Transporte</option><option>Salud</option>
+      <option>Entretenimiento</option><option>Ropa</option><option>Educación</option>
+      <option>Servicios</option><option>Vivienda</option><option>Otros</option>
+    </select>
+    <input type="date" id="filtro-desde" onchange="renderGastos()" placeholder="Desde">
+    <input type="date" id="filtro-hasta" onchange="renderGastos()" placeholder="Hasta">
+    <button class="btn btn-outline btn-sm" onclick="limpiarFiltros()">✕ Limpiar</button>
+  </div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Descripción</th><th>Categoría</th><th>Cuenta</th><th>Fecha</th><th>Monto</th><th></th></tr></thead>
+      <tbody id="tabla-gastos"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ DEUDAS ══ -->
+<div id="page-deudas" class="page">
+  <div class="page-header">
+    <div><h2 class="page-title">Deudas</h2><p class="page-subtitle">Seguimiento de tus deudas pendientes</p></div>
+    <button class="btn btn-primary" onclick="openModal('modal-deuda')">+ Nueva Deuda</button>
+  </div>
+  <div id="lista-deudas" style="display:flex;flex-direction:column;gap:12px">
+    <div class="loading card"><div class="spinner"></div>Cargando deudas...</div>
+  </div>
+</div>
+
+<!-- ══ RECORDATORIOS ══ -->
+<div id="page-recordatorios" class="page">
+  <div class="page-header">
+    <div><h2 class="page-title">Recordatorios</h2><p class="page-subtitle">Nunca te olvides de una fecha importante</p></div>
+    <button class="btn btn-primary" onclick="openModal('modal-recordatorio')">+ Nuevo Recordatorio</button>
+  </div>
+  <div id="lista-recordatorios" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+    <div class="loading card"><div class="spinner"></div>Cargando recordatorios...</div>
+  </div>
+</div>
+
+<!-- ══ RESUMEN ══ -->
+<div id="page-resumen" class="page">
+  <div class="page-header">
+    <div><h2 class="page-title">Resumen General</h2><p class="page-subtitle">Panorama completo de tus finanzas</p></div>
+  </div>
+  <div class="grid-3" style="margin-bottom:24px">
+    <div class="stat-card"><div class="stat-label">Activos Totales</div><div class="stat-value" id="res-activos">₲ 0</div></div>
+    <div class="stat-card"><div class="stat-label">Deudas Pendientes</div><div class="stat-value neg" id="res-deudas">₲ 0</div></div>
+    <div class="stat-card"><div class="stat-label">Patrimonio Neto</div><div class="stat-value" id="res-neto">₲ 0</div></div>
+  </div>
+  <div class="grid-2" style="margin-bottom:24px">
+    <div class="card">
+      <div class="section-title"><span class="section-title-left">📊 Gastos por Categoría</span></div>
+      <div id="graf-cat"><div class="empty-state"><p>Sin datos</p></div></div>
+    </div>
+    <div class="card">
+      <div class="section-title"><span class="section-title-left">🏦 Distribución por Cuenta</span></div>
+      <div id="graf-cuentas"><div class="empty-state"><p>Sin datos</p></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-title"><span class="section-title-left">📅 Gastos por Mes</span></div>
+    <div id="graf-mes"><div class="empty-state"><p>Sin datos</p></div></div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- ═══════════ MODALES ═══════════ -->
+
+<!-- Modal: Nueva/Editar Cuenta -->
+<div class="modal-overlay" id="modal-cuenta">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-cuenta-title">Nueva Cuenta</h3>
+      <button class="modal-close" onclick="closeModal('modal-cuenta')">✕</button>
+    </div>
+    <input type="hidden" id="cuenta-edit-id">
+    <div class="form-group"><label>Nombre de la cuenta</label><input type="text" id="cuenta-nombre" placeholder="Ej: Banco Nación, Billetera..."></div>
+    <div class="form-row">
+      <div class="form-group"><label>Tipo</label>
+        <select id="cuenta-tipo">
+          <option value="debito">💳 Débito</option>
+          <option value="credito">💰 Crédito</option>
+          <option value="ahorro">🏦 Ahorro</option>
+          <option value="efectivo">💵 Efectivo</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Moneda</label>
+        <select id="cuenta-moneda">
+          <option value="PYG">₲ Guaraníes (PYG)</option>
+          <option value="USD">$ Dólares (USD)</option>
+          <option value="ARS">$ Pesos AR (ARS)</option>
+          <option value="BRL">R$ Reales (BRL)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" id="campo-saldo-inicial"><label>Saldo inicial</label><input type="number" id="cuenta-saldo" placeholder="0" step="1" min="0"></div>
+    <div class="form-group"><label>Descripción (opcional)</label><input type="text" id="cuenta-desc" placeholder="Notas adicionales..."></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" id="btn-guardar-cuenta" onclick="guardarCuenta()">Guardar Cuenta</button>
+  </div>
+</div>
+
+<!-- Modal: Depósito -->
+<div class="modal-overlay" id="modal-deposito">
+  <div class="modal">
+    <div class="modal-header"><h3 class="modal-title">Agregar Saldo</h3><button class="modal-close" onclick="closeModal('modal-deposito')">✕</button></div>
+    <input type="hidden" id="dep-cuenta-id">
+    <p style="font-size:14px;color:var(--text-soft);margin-bottom:16px">Cuenta: <strong id="dep-cuenta-nombre"></strong></p>
+    <div class="form-group"><label>Monto a depositar</label><input type="number" id="dep-monto" placeholder="0" step="1" min="1"></div>
+    <div class="form-group"><label>Descripción (opcional)</label><input type="text" id="dep-desc" placeholder="Ej: Sueldo, ingreso extra..."></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="guardarDeposito()">Confirmar Depósito</button>
+  </div>
+</div>
+
+<!-- Modal: Retiro -->
+<div class="modal-overlay" id="modal-retiro">
+  <div class="modal">
+    <div class="modal-header"><h3 class="modal-title">Retirar Saldo</h3><button class="modal-close" onclick="closeModal('modal-retiro')">✕</button></div>
+    <input type="hidden" id="ret-cuenta-id">
+    <p style="font-size:14px;color:var(--text-soft);margin-bottom:16px">Cuenta: <strong id="ret-cuenta-nombre"></strong></p>
+    <div class="form-group"><label>Monto a retirar</label><input type="number" id="ret-monto" placeholder="0" step="1" min="1"></div>
+    <div class="form-group"><label>Descripción (opcional)</label><input type="text" id="ret-desc" placeholder="Ej: Pago efectivo..."></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="guardarRetiro()">Confirmar Retiro</button>
+  </div>
+</div>
+
+<!-- Modal: Transferencia -->
+<div class="modal-overlay" id="modal-transferencia">
+  <div class="modal">
+    <div class="modal-header"><h3 class="modal-title">Transferir entre Cuentas</h3><button class="modal-close" onclick="closeModal('modal-transferencia')">✕</button></div>
+    <div class="form-group"><label>Cuenta de Origen</label><select id="trans-origen"></select></div>
+    <div class="form-group"><label>Cuenta de Destino</label><select id="trans-destino"></select></div>
+    <div class="form-group"><label>Monto</label><input type="number" id="trans-monto" placeholder="0" step="1" min="1"></div>
+    <div class="form-group"><label>Descripción (opcional)</label><input type="text" id="trans-desc" placeholder="Ej: Movimiento interno..."></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="guardarTransferencia()">Confirmar Transferencia</button>
+  </div>
+</div>
+
+<!-- Modal: Nuevo/Editar Gasto -->
+<div class="modal-overlay" id="modal-gasto">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-gasto-title">Registrar Gasto</h3>
+      <button class="modal-close" onclick="closeModal('modal-gasto')">✕</button>
+    </div>
+    <input type="hidden" id="gasto-edit-id">
+    <div class="form-group"><label>Descripción</label><input type="text" id="gasto-desc" placeholder="¿En qué gastaste?"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Categoría</label>
+        <select id="gasto-categoria">
+          <option>Alimentación</option><option>Transporte</option><option>Salud</option>
+          <option>Entretenimiento</option><option>Ropa</option><option>Educación</option>
+          <option>Servicios</option><option>Vivienda</option><option>Otros</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Cuenta</label><select id="gasto-cuenta"><option value="">Sin cuenta</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Monto</label><input type="number" id="gasto-monto" placeholder="0" step="1" min="1"></div>
+      <div class="form-group"><label>Fecha</label><input type="date" id="gasto-fecha"></div>
+    </div>
+    <div class="form-group"><label>Notas (opcional)</label><input type="text" id="gasto-notas" placeholder="Información adicional..."></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" id="btn-guardar-gasto" onclick="guardarGasto()">Registrar Gasto</button>
+  </div>
+</div>
+
+<!-- Modal: Nueva/Editar Deuda -->
+<div class="modal-overlay" id="modal-deuda">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-deuda-title">Nueva Deuda</h3>
+      <button class="modal-close" onclick="closeModal('modal-deuda')">✕</button>
+    </div>
+    <input type="hidden" id="deuda-edit-id">
+    <div class="form-group"><label>Descripción</label><input type="text" id="deuda-desc" placeholder="Ej: Préstamo personal, tarjeta..."></div>
+    <div class="form-row">
+      <div class="form-group"><label>Acreedor</label><input type="text" id="deuda-acreedor" placeholder="¿A quién le debes?"></div>
+      <div class="form-group"><label>Tipo</label>
+        <select id="deuda-tipo">
+          <option value="prestamo">💸 Préstamo</option>
+          <option value="tarjeta">💳 Tarjeta</option>
+          <option value="cuotas">📦 Cuotas</option>
+          <option value="personal">👤 Personal</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Monto Total</label><input type="number" id="deuda-total" placeholder="0" step="1" min="1"></div>
+      <div class="form-group"><label>Ya Pagado</label><input type="number" id="deuda-pagado" placeholder="0" step="1" min="0" value="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Vencimiento</label><input type="date" id="deuda-vencimiento"></div>
+      <div class="form-group"><label>Interés anual (%)</label><input type="number" id="deuda-interes" placeholder="0.0" step="0.1" min="0" value="0"></div>
+    </div>
+    <div class="form-group"><label>Notas (opcional)</label><input type="text" id="deuda-notas" placeholder="Información adicional..."></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" id="btn-guardar-deuda" onclick="guardarDeuda()">Guardar Deuda</button>
+  </div>
+</div>
+
+<!-- Modal: Pago parcial de deuda -->
+<div class="modal-overlay" id="modal-pago-deuda">
+  <div class="modal">
+    <div class="modal-header"><h3 class="modal-title">Registrar Pago</h3><button class="modal-close" onclick="closeModal('modal-pago-deuda')">✕</button></div>
+    <input type="hidden" id="pago-deuda-id">
+    <p style="font-size:14px;color:var(--text-soft);margin-bottom:4px">Deuda: <strong id="pago-deuda-nombre"></strong></p>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Pendiente: <strong id="pago-deuda-pendiente" style="color:var(--red)"></strong></p>
+    <div class="form-group"><label>Monto del pago</label><input type="number" id="pago-monto" placeholder="0" step="1" min="1"></div>
+    <div class="form-group"><label>Descontar de cuenta (opcional)</label><select id="pago-cuenta"><option value="">Sin cuenta</option></select></div>
+    <div class="form-group"><label>Notas</label><input type="text" id="pago-notas" placeholder="Ej: Cuota enero 2025..."></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="guardarPagoDeuda()">Confirmar Pago</button>
+  </div>
+</div>
+
+<!-- Modal: Nuevo/Editar Recordatorio -->
+<div class="modal-overlay" id="modal-recordatorio">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-rec-title">Nuevo Recordatorio</h3>
+      <button class="modal-close" onclick="closeModal('modal-recordatorio')">✕</button>
+    </div>
+    <input type="hidden" id="rec-edit-id">
+    <div class="form-group"><label>Nombre del pago</label><input type="text" id="rec-nombre" placeholder="Ej: Cuota préstamo, Agua..."></div>
+    <div class="form-row">
+      <div class="form-group"><label>Día del mes</label><input type="number" id="rec-dia" placeholder="Ej: 15" min="1" max="31"></div>
+      <div class="form-group"><label>Categoría</label>
+        <select id="rec-categoria">
+          <option>Servicios</option><option>Préstamo</option><option>Alquiler</option>
+          <option>Seguro</option><option>Suscripción</option><option>Impuesto</option><option>Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Monto estimado</label><input type="number" id="rec-monto" placeholder="0" step="1" min="0"></div>
+      <div class="form-group"><label>Urgencia</label>
+        <select id="rec-urgencia">
+          <option value="ok">🟢 Normal</option>
+          <option value="soon">🟡 Próximo</option>
+          <option value="urgent">🔴 Urgente</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Notas (opcional)</label><input type="text" id="rec-notas" placeholder="Información adicional..."></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" id="btn-guardar-rec" onclick="guardarRecordatorio()">Guardar Recordatorio</button>
+  </div>
+</div>
+
+
+<div class="toast" id="toast"></div>
+
+</main>
+</div><!-- #app-wrapper -->
+
+<script>
+'use strict';
+
+// ════════════════════════════════════════════════════════
+//  CONFIGURACIÓN
+// ════════════════════════════════════════════════════════
+const API = '/api';
+
+// ════════════════════════════════════════════════════════
+//  AUTH — JWT storage y helpers
+// ════════════════════════════════════════════════════════
+const Auth = {
+  get token()   { return sessionStorage.getItem('finance_token'); },
+  get usuario() { try { return JSON.parse(sessionStorage.getItem('finance_user')); } catch { return null; } },
+  set(token, usuario) {
+    sessionStorage.setItem('finance_token', token);
+    sessionStorage.setItem('finance_user', JSON.stringify(usuario));
+  },
+  clear() {
+    sessionStorage.removeItem('finance_token');
+    sessionStorage.removeItem('finance_user');
+  },
+  isLoggedIn() { return !!this.token; },
+};
+
+// ════════════════════════════════════════════════════════
+//  PANTALLAS DE AUTH
+// ════════════════════════════════════════════════════════
+function showAuthScreen(screen) {
+  document.getElementById('auth-login').style.display    = screen === 'login'    ? '' : 'none';
+  document.getElementById('auth-register').style.display = screen === 'register' ? '' : 'none';
+  // Limpiar errores
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('register-error').classList.remove('show');
+}
+
+function showApp() {
+  document.getElementById('auth-overlay').classList.add('hidden');
+  document.getElementById('app-wrapper').style.display = 'flex';
+  const u = Auth.usuario;
+  if (u) {
+    document.getElementById('sidebar-nombre').textContent = u.nombre || 'Usuario';
+    document.getElementById('sidebar-email').textContent  = u.email  || '';
+  }
+}
+
+function showAuth() {
+  Auth.clear();
+  document.getElementById('auth-overlay').classList.remove('hidden');
+  document.getElementById('app-wrapper').style.display = 'none';
+  showAuthScreen('login');
+  // Limpiar campos
+  ['login-email','login-password','reg-nombre','reg-email','reg-password'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+async function doLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl    = document.getElementById('login-error');
+  const btn      = document.getElementById('btn-login');
+
+  errEl.classList.remove('show');
+  if (!email || !password) { errEl.textContent = 'Completá email y contraseña.'; errEl.classList.add('show'); return; }
+
+  btn.disabled = true; btn.textContent = 'Iniciando...';
+  try {
+    const res  = await fetch(API + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error al iniciar sesión');
+    Auth.set(data.token, data.usuario);
+    showApp();
+    await init();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.add('show');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Iniciar sesión';
+  }
+}
+
+async function doRegister() {
+  const nombre   = document.getElementById('reg-nombre').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const errEl    = document.getElementById('register-error');
+  const btn      = document.getElementById('btn-register');
+
+  errEl.classList.remove('show');
+  if (!nombre || !email || !password) { errEl.textContent = 'Completá todos los campos.'; errEl.classList.add('show'); return; }
+
+  btn.disabled = true; btn.textContent = 'Creando cuenta...';
+  try {
+    const res  = await fetch(API + '/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error al registrar');
+    Auth.set(data.token, data.usuario);
+    showApp();
+    await init();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.add('show');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Crear cuenta';
+  }
+}
+
+function doLogout() {
+  if (!confirm('¿Cerrar sesión?')) return;
+  showAuth();
+}
+
+// Enter key listeners for auth forms
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('login-email').addEventListener('keydown',    e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('reg-password').addEventListener('keydown',   e => { if (e.key === 'Enter') doRegister(); });
+});
+
+// ════════════════════════════════════════════════════════
+//  API CLIENT — fetch wrapper con JWT automático
+// ════════════════════════════════════════════════════════
+async function api(method, path, body = null) {
+  const opts = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(Auth.token ? { 'Authorization': 'Bearer ' + Auth.token } : {}),
+    },
+  };
+  if (body) opts.body = JSON.stringify(body);
+
+  const res  = await fetch(API + path, opts);
+  const data = await res.json().catch(() => ({}));
+
+  if (res.status === 401) {
+    // Token expirado o inválido → forzar logout
+    showToast('Sesión expirada. Por favor iniciá sesión nuevamente.', 'warn');
+    setTimeout(showAuth, 1500);
+    throw new Error('Sesión expirada');
+  }
+
+  if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+  return data;
+}
+
+const GET    = (path)        => api('GET',    path);
+const POST   = (path, body)  => api('POST',   path, body);
+const PUT    = (path, body)  => api('PUT',    path, body);
+const DELETE = (path)        => api('DELETE', path);
+
+
+
+
+// ════════════════════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════════════════════
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  const icon = type === 'success' ? '✅' : type === 'warn' ? '⚠️' : '❌';
+  t.textContent = icon + ' ' + msg;
+  t.className = `toast show${type !== 'success' ? ' ' + type : ''}`;
+  setTimeout(() => t.className = 'toast', 3500);
+}
+
+// ════════════════════════════════════════════════════════
+//  FORMATO MONEDA (Guaraníes PYG con puntos)
+// ════════════════════════════════════════════════════════
+function fmt(n, moneda = 'PYG') {
+  const num = parseFloat(n) || 0;
+  const abs = Math.abs(Math.round(num)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const sign = num < 0 ? '-' : '';
+  const sym = moneda === 'USD' ? 'US$' : moneda === 'ARS' ? 'AR$' : moneda === 'BRL' ? 'R$' : '₲';
+  return sign + sym + '\u00A0' + abs;
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const s = typeof d === 'string' ? d.substring(0, 10) : d;
+  return new Date(s + 'T00:00:00').toLocaleDateString('es-PY', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+// Constantes de presentación
+const TIPO_EMOJI = { debito:'💳', credito:'💰', ahorro:'🏦', efectivo:'💵' };
+const TIPO_LABEL = { debito:'Débito', credito:'Crédito', ahorro:'Ahorro', efectivo:'Efectivo' };
+const BADGE_CLS  = { debito:'badge-green', credito:'badge-amber', ahorro:'badge-blue', efectivo:'badge-bark' };
+
+// ════════════════════════════════════════════════════════
+//  NAVEGACIÓN
+// ════════════════════════════════════════════════════════
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick')?.includes(`'${page}'`)) n.classList.add('active');
+  });
+  renderPage(page);
+}
+
+function renderPage(page) {
+  ({ dashboard: renderDashboard, cuentas: renderCuentas, gastos: renderGastos,
+     deudas: renderDeudas, recordatorios: renderRecordatorios, resumen: renderResumen })[page]?.();
+}
+
+// ════════════════════════════════════════════════════════
+//  MODALES
+// ════════════════════════════════════════════════════════
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+  if (id === 'modal-gasto' || id === 'modal-pago-deuda') populateCuentasSelects();
+  if (id === 'modal-transferencia') populateTransferSelects();
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o =>
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); })
+);
+
+// ════════════════════════════════════════════════════════
+//  VERIFICAR CONEXIÓN AL BACKEND
+// ════════════════════════════════════════════════════════
+async function checkApiStatus() {
+  const el = document.getElementById('api-status');
+  try {
+    await GET('/health');
+    el.className = 'sidebar-status status-ok';
+    el.innerHTML = '<span class="status-dot"></span>Conectado';
+  } catch {
+    el.className = 'sidebar-status status-err';
+    el.innerHTML = '<span class="status-dot"></span>Sin conexión';
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  HELPERS — poblar selects de cuentas
+// ════════════════════════════════════════════════════════
+let _cuentasCache = [];
+
+async function getCuentas() {
+  _cuentasCache = await GET('/cuentas');
+  return _cuentasCache;
+}
+
+function populateCuentasSelects() {
+  const opts = '<option value="">Sin cuenta</option>' +
+    _cuentasCache.map(c => `<option value="${c.id}">${TIPO_EMOJI[c.tipo]} ${c.nombre} (${c.moneda})</option>`).join('');
+  const sel1 = document.getElementById('gasto-cuenta');
+  const sel2 = document.getElementById('pago-cuenta');
+  if (sel1) sel1.innerHTML = opts;
+  if (sel2) sel2.innerHTML = opts;
+}
+
+function populateTransferSelects() {
+  const opts = _cuentasCache.map(c => `<option value="${c.id}">${TIPO_EMOJI[c.tipo]} ${c.nombre}</option>`).join('');
+  document.getElementById('trans-origen').innerHTML  = opts;
+  document.getElementById('trans-destino').innerHTML = opts;
+  // Seleccionar destino diferente por defecto
+  if (_cuentasCache.length > 1) document.getElementById('trans-destino').selectedIndex = 1;
+}
+
+// ════════════════════════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════════════════════════
+async function renderDashboard() {
+  // Saludo con hora
+  const now  = new Date();
+  const hora = now.getHours();
+  const saludo = hora < 12 ? '¡Buenos días!' : hora < 18 ? '¡Buenas tardes!' : '¡Buenas noches!';
+  document.getElementById('dash-greeting').textContent = saludo + ' Bienvenido a FINANCE';
+  document.getElementById('dash-date').textContent =
+    now.toLocaleDateString('es-PY', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  try {
+    const d = await GET('/dashboard');
+
+    // Stats
+    const bal = d.stats.total_activos;
+    document.getElementById('s-balance').textContent    = fmt(bal);
+    document.getElementById('s-balance').className      = 'stat-value' + (bal < 0 ? ' neg' : '');
+    document.getElementById('s-gastos').textContent     = '-' + fmt(d.stats.gastos_mes);
+    document.getElementById('s-deudas').textContent     = fmt(d.stats.total_deudas);
+    const pat = d.stats.patrimonio_neto;
+    document.getElementById('s-patrimonio').textContent = fmt(pat);
+    document.getElementById('s-patrimonio').className   = 'stat-value' + (pat < 0 ? ' neg' : '');
+
+    // Cuentas
+    const dc = document.getElementById('dash-cuentas');
+    dc.innerHTML = d.cuentas.length
+      ? d.cuentas.map(c => `
+          <div class="list-item">
+            <span style="font-size:20px">${TIPO_EMOJI[c.tipo]}</span>
+            <div class="list-desc"><div class="title">${esc(c.nombre)}</div><div class="sub">${TIPO_LABEL[c.tipo]} · ${c.moneda}</div></div>
+            <div class="list-amount ${c.saldo < 0 ? 'neg':'pos'}">${fmt(c.saldo, c.moneda)}</div>
+          </div>`).join('')
+      : '<div class="empty-state"><div class="es-emoji">💳</div><p>Sin cuentas. <a href="#" onclick="navigate(\'cuentas\')">Agrega una</a></p></div>';
+
+    // Recordatorios próximos
+    const dr = document.getElementById('dash-recs');
+    dr.innerHTML = d.recordatorios.length
+      ? d.recordatorios.slice(0,5).map(r => `
+          <div class="list-item">
+            <div style="width:32px;height:32px;background:var(--green-mist);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:14px;color:var(--green-dark);flex-shrink:0">${r.dia_mes}</div>
+            <div class="list-desc"><div class="title">${esc(r.nombre)}</div><div class="sub">${r.categoria} · en ${r.dias_para_pago} días</div></div>
+            ${r.monto_estimado > 0 ? `<div class="list-amount warn">${fmt(r.monto_estimado)}</div>` : ''}
+          </div>`).join('')
+      : '<div class="empty-state"><div class="es-emoji">🔔</div><p>Sin recordatorios</p></div>';
+
+    // Últimos movimientos
+    const dm = document.getElementById('dash-movs');
+    dm.innerHTML = d.movimientos.length
+      ? d.movimientos.map(g => `
+          <div class="list-item">
+            <div class="list-dot gasto"></div>
+            <div class="list-desc">
+              <div class="title">${esc(g.descripcion)}</div>
+              <div class="sub">${g.categoria} · ${fmtDate(g.fecha)}${g.cuenta_nombre ? ' · ' + esc(g.cuenta_nombre) : ''}</div>
+            </div>
+            <div class="list-amount neg">-${fmt(g.monto)}</div>
+          </div>`).join('')
+      : '<div class="empty-state"><div class="es-emoji">📊</div><p>Sin movimientos registrados</p></div>';
+
+  } catch (err) {
+    showToast('Error al cargar dashboard: ' + err.message, 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  CUENTAS
+// ════════════════════════════════════════════════════════
+async function renderCuentas() {
+  const cont = document.getElementById('lista-cuentas');
+  cont.innerHTML = '<div class="loading card"><div class="spinner"></div>Cargando...</div>';
+  try {
+    const cuentas = await getCuentas();
+    if (!cuentas.length) {
+      cont.innerHTML = '<div class="empty-state card"><div class="es-emoji">💳</div><p>Agrega tu primera cuenta</p></div>';
+      return;
+    }
+    cont.innerHTML = cuentas.map(c => `
+      <div class="account-card">
+        <div class="account-icon ${c.tipo}">${TIPO_EMOJI[c.tipo]||'💳'}</div>
+        <div class="account-info">
+          <div class="account-name">${esc(c.nombre)}</div>
+          <div class="account-type">
+            <span class="badge ${BADGE_CLS[c.tipo]||'badge-green'}">${TIPO_LABEL[c.tipo]}</span>
+            <span style="font-size:12px;color:var(--text-muted)">${c.moneda}</span>
+          </div>
+        </div>
+        <div class="account-balance ${c.saldo < 0 ? 'neg':''}">${fmt(c.saldo, c.moneda)}</div>
+        <div class="account-actions">
+          <button class="btn btn-outline btn-sm" title="Depositar" onclick="abrirDeposito(${c.id},'${esc(c.nombre)}')">+ Saldo</button>
+          <button class="btn btn-amber btn-sm" title="Retirar" onclick="abrirRetiro(${c.id},'${esc(c.nombre)}')">− Saldo</button>
+          <button class="btn btn-outline btn-sm" title="Editar" onclick="editarCuenta(${c.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" title="Eliminar" onclick="eliminarCuenta(${c.id})">🗑️</button>
+        </div>
+      </div>`).join('');
+  } catch (err) {
+    cont.innerHTML = `<div class="empty-state card"><p>Error: ${err.message}</p></div>`;
+  }
+}
+
+async function guardarCuenta() {
+  const id     = document.getElementById('cuenta-edit-id').value;
+  const nombre = document.getElementById('cuenta-nombre').value.trim();
+  const tipo   = document.getElementById('cuenta-tipo').value;
+  const moneda = document.getElementById('cuenta-moneda').value;
+  const saldo  = parseFloat(document.getElementById('cuenta-saldo').value) || 0;
+  const desc   = document.getElementById('cuenta-desc').value.trim();
+
+  if (!nombre) { showToast('Ingresa el nombre de la cuenta', 'error'); return; }
+
+  const btn = document.getElementById('btn-guardar-cuenta');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  try {
+    if (id) {
+      await PUT(`/cuentas/${id}`, { nombre, tipo, moneda, descripcion: desc });
+      showToast('Cuenta actualizada');
+    } else {
+      await POST('/cuentas', { nombre, tipo, moneda, saldo_inicial: saldo, descripcion: desc });
+      showToast('Cuenta creada correctamente');
+    }
+    closeModal('modal-cuenta');
+    resetFormCuenta();
+    await renderCuentas();
+    renderDashboard();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar Cuenta';
+  }
+}
+
+function resetFormCuenta() {
+  document.getElementById('cuenta-edit-id').value = '';
+  document.getElementById('cuenta-nombre').value  = '';
+  document.getElementById('cuenta-saldo').value   = '';
+  document.getElementById('cuenta-desc').value    = '';
+  document.getElementById('modal-cuenta-title').textContent = 'Nueva Cuenta';
+  document.getElementById('campo-saldo-inicial').style.display = 'block';
+}
+
+async function editarCuenta(id) {
+  const cuenta = _cuentasCache.find(c => c.id === id);
+  if (!cuenta) return;
+  document.getElementById('cuenta-edit-id').value = id;
+  document.getElementById('cuenta-nombre').value  = cuenta.nombre;
+  document.getElementById('cuenta-tipo').value    = cuenta.tipo;
+  document.getElementById('cuenta-moneda').value  = cuenta.moneda;
+  document.getElementById('cuenta-desc').value    = cuenta.descripcion || '';
+  document.getElementById('modal-cuenta-title').textContent = 'Editar Cuenta';
+  document.getElementById('campo-saldo-inicial').style.display = 'none';
+  openModal('modal-cuenta');
+}
+
+async function eliminarCuenta(id) {
+  if (!confirm('¿Eliminar esta cuenta? El historial de gastos asociados se mantendrá.')) return;
+  try {
+    await DELETE(`/cuentas/${id}`);
+    showToast('Cuenta eliminada');
+    await renderCuentas();
+    renderDashboard();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+// Depósito
+function abrirDeposito(id, nombre) {
+  document.getElementById('dep-cuenta-id').value      = id;
+  document.getElementById('dep-cuenta-nombre').textContent = nombre;
+  document.getElementById('dep-monto').value          = '';
+  document.getElementById('dep-desc').value           = '';
+  openModal('modal-deposito');
+}
+
+async function guardarDeposito() {
+  const id    = document.getElementById('dep-cuenta-id').value;
+  const monto = parseFloat(document.getElementById('dep-monto').value);
+  const desc  = document.getElementById('dep-desc').value.trim() || 'Depósito';
+  if (!monto || monto <= 0) { showToast('Ingresa un monto válido', 'error'); return; }
+  try {
+    await POST(`/cuentas/${id}/deposito`, { monto, descripcion: desc });
+    showToast('Depósito registrado');
+    closeModal('modal-deposito');
+    await renderCuentas();
+    renderDashboard();
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+// Retiro
+function abrirRetiro(id, nombre) {
+  document.getElementById('ret-cuenta-id').value      = id;
+  document.getElementById('ret-cuenta-nombre').textContent = nombre;
+  document.getElementById('ret-monto').value          = '';
+  document.getElementById('ret-desc').value           = '';
+  openModal('modal-retiro');
+}
+
+async function guardarRetiro() {
+  const id    = document.getElementById('ret-cuenta-id').value;
+  const monto = parseFloat(document.getElementById('ret-monto').value);
+  const desc  = document.getElementById('ret-desc').value.trim() || 'Retiro';
+  if (!monto || monto <= 0) { showToast('Ingresa un monto válido', 'error'); return; }
+  try {
+    await POST(`/cuentas/${id}/retiro`, { monto, descripcion: desc });
+    showToast('Retiro registrado');
+    closeModal('modal-retiro');
+    await renderCuentas();
+    renderDashboard();
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+// Transferencia
+async function guardarTransferencia() {
+  const origen_id  = document.getElementById('trans-origen').value;
+  const destino_id = document.getElementById('trans-destino').value;
+  const monto      = parseFloat(document.getElementById('trans-monto').value);
+  const desc       = document.getElementById('trans-desc').value.trim();
+  if (!monto || monto <= 0) { showToast('Ingresa un monto válido', 'error'); return; }
+  if (origen_id === destino_id) { showToast('Las cuentas deben ser distintas', 'error'); return; }
+  try {
+    await POST('/cuentas/transferencia', { origen_id: parseInt(origen_id), destino_id: parseInt(destino_id), monto, descripcion: desc });
+    showToast('Transferencia realizada');
+    closeModal('modal-transferencia');
+    await renderCuentas();
+    renderDashboard();
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+// ════════════════════════════════════════════════════════
+//  GASTOS
+// ════════════════════════════════════════════════════════
+async function renderGastos() {
+  const tbody = document.getElementById('tabla-gastos');
+  tbody.innerHTML = '<tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>';
+
+  try {
+    const cat   = document.getElementById('filtro-cat').value;
+    const desde = document.getElementById('filtro-desde').value;
+    const hasta = document.getElementById('filtro-hasta').value;
+
+    let qs = '';
+    if (cat)   qs += `&categoria=${encodeURIComponent(cat)}`;
+    if (desde) qs += `&desde=${desde}`;
+    if (hasta) qs += `&hasta=${hasta}`;
+
+    const gastos = await GET('/gastos?' + qs.slice(1));
+
+    if (!gastos.length) {
+      tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="es-emoji">📉</div><p>Sin gastos registrados</p></div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = gastos.map(g => `
+      <tr>
+        <td><strong>${esc(g.descripcion)}</strong>${g.notas ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${esc(g.notas)}</div>` : ''}</td>
+        <td><span class="badge badge-green">${g.categoria}</span></td>
+        <td>${g.cuenta_nombre ? esc(g.cuenta_nombre) : '<span style="color:var(--text-muted)">—</span>'}</td>
+        <td>${fmtDate(g.fecha)}</td>
+        <td style="color:var(--red);font-weight:600">-${fmt(g.monto, g.cuenta_moneda||'PYG')}</td>
+        <td>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-outline btn-xs" onclick="editarGasto(${g.id})">✏️</button>
+            <button class="btn btn-danger btn-xs" onclick="eliminarGasto(${g.id})">🗑️</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><p>Error: ${err.message}</p></div></td></tr>`;
+  }
+}
+
+async function guardarGasto() {
+  const id        = document.getElementById('gasto-edit-id').value;
+  const desc      = document.getElementById('gasto-desc').value.trim();
+  const categoria = document.getElementById('gasto-categoria').value;
+  const cuenta_id = document.getElementById('gasto-cuenta').value || null;
+  const monto     = parseFloat(document.getElementById('gasto-monto').value);
+  const fecha     = document.getElementById('gasto-fecha').value;
+  const notas     = document.getElementById('gasto-notas').value.trim();
+
+  if (!desc)            { showToast('Ingresa una descripción', 'error'); return; }
+  if (!monto || monto <= 0) { showToast('El monto debe ser mayor a 0', 'error'); return; }
+
+  const btn = document.getElementById('btn-guardar-gasto');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  try {
+    const body = { descripcion: desc, categoria, cuenta_id: cuenta_id ? parseInt(cuenta_id) : null, monto, fecha, notas };
+    if (id) {
+      await PUT(`/gastos/${id}`, body);
+      showToast('Gasto actualizado');
+    } else {
+      await POST('/gastos', body);
+      showToast('Gasto registrado');
+    }
+    closeModal('modal-gasto');
+    resetFormGasto();
+    await renderGastos();
+    renderDashboard();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Registrar Gasto';
+  }
+}
+
+function resetFormGasto() {
+  ['gasto-edit-id','gasto-desc','gasto-monto','gasto-notas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('gasto-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('modal-gasto-title').textContent = 'Registrar Gasto';
+}
+
+async function editarGasto(id) {
+  try {
+    const gastos = await GET('/gastos');
+    const g = gastos.find(x => x.id === id);
+    if (!g) return;
+    document.getElementById('gasto-edit-id').value    = id;
+    document.getElementById('gasto-desc').value       = g.descripcion;
+    document.getElementById('gasto-categoria').value  = g.categoria;
+    document.getElementById('gasto-monto').value      = g.monto;
+    document.getElementById('gasto-fecha').value      = g.fecha ? g.fecha.substring(0,10) : '';
+    document.getElementById('gasto-notas').value      = g.notas || '';
+    document.getElementById('modal-gasto-title').textContent = 'Editar Gasto';
+    openModal('modal-gasto');
+    // Seleccionar cuenta después de que se pobló el select
+    setTimeout(() => {
+      if (g.cuenta_id) document.getElementById('gasto-cuenta').value = g.cuenta_id;
+    }, 50);
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+async function eliminarGasto(id) {
+  if (!confirm('¿Eliminar este gasto? El saldo se revertirá automáticamente.')) return;
+  try {
+    await DELETE(`/gastos/${id}`);
+    showToast('Gasto eliminado, saldo revertido');
+    await renderGastos();
+    renderDashboard();
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+function limpiarFiltros() {
+  document.getElementById('filtro-cat').value   = '';
+  document.getElementById('filtro-desde').value = '';
+  document.getElementById('filtro-hasta').value = '';
+  renderGastos();
+}
+
+// ════════════════════════════════════════════════════════
+//  DEUDAS
+// ════════════════════════════════════════════════════════
+async function renderDeudas() {
+  const cont = document.getElementById('lista-deudas');
+  cont.innerHTML = '<div class="loading card"><div class="spinner"></div>Cargando...</div>';
+  try {
+    const deudas = await GET('/deudas');
+    if (!deudas.length) {
+      cont.innerHTML = '<div class="empty-state card"><div class="es-emoji">🏦</div><p>Sin deudas registradas</p></div>';
+      return;
+    }
+    cont.innerHTML = deudas.map(d => {
+      const pend    = parseFloat(d.saldo_pendiente) || 0;
+      const pct     = parseFloat(d.pct_pagado) || 0;
+      const vencido = d.fecha_vencimiento && new Date(d.fecha_vencimiento + 'T00:00:00') < new Date();
+      return `
+      <div class="card card-sm">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div>
+            <div style="font-size:15px;font-weight:600;color:var(--text-dark)">${esc(d.descripcion)}</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              ${d.acreedor ? `<span>A: ${esc(d.acreedor)}</span>` : ''}
+              <span class="badge badge-${d.tipo==='tarjeta'?'amber':d.tipo==='prestamo'?'red':'bark'}">${d.tipo}</span>
+              ${d.tasa_interes > 0 ? `<span class="badge badge-amber">${d.tasa_interes}% interés</span>` : ''}
+              <span class="badge badge-${d.estado==='pagada'?'green':d.estado==='en_curso'?'blue':'red'}">${d.estado}</span>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--red)">-${fmt(pend)}</div>
+            <div style="font-size:11px;color:var(--text-muted)">de ${fmt(d.monto_total)}</div>
+            ${d.fecha_vencimiento ? `<div style="font-size:11px;color:${vencido?'var(--red)':'var(--text-muted)'};margin-top:2px">${vencido?'⚠️ Vencido':'Vence'} ${fmtDate(d.fecha_vencimiento)}</div>` : ''}
+          </div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill ${pct<30?'danger':pct<70?'warn':''}" style="width:${pct}%"></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+          <span style="font-size:12px;color:var(--text-soft)">${pct}% pagado · pagado ${fmt(d.monto_pagado)} de ${fmt(d.monto_total)}</span>
+          <div style="display:flex;gap:6px">
+            ${d.estado !== 'pagada' ? `<button class="btn btn-outline btn-sm" onclick="abrirPagoDeuda(${d.id},'${esc(d.descripcion)}',${pend})">💳 Pagar</button>` : ''}
+            <button class="btn btn-outline btn-sm" onclick="editarDeuda(${d.id})">✏️</button>
+            <button class="btn btn-danger btn-sm" onclick="eliminarDeuda(${d.id})">🗑️</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    cont.innerHTML = `<div class="empty-state card"><p>Error: ${err.message}</p></div>`;
+  }
+}
+
+async function guardarDeuda() {
+  const id         = document.getElementById('deuda-edit-id').value;
+  const desc       = document.getElementById('deuda-desc').value.trim();
+  const acreedor   = document.getElementById('deuda-acreedor').value.trim();
+  const tipo       = document.getElementById('deuda-tipo').value;
+  const total      = parseFloat(document.getElementById('deuda-total').value);
+  const pagado     = parseFloat(document.getElementById('deuda-pagado').value) || 0;
+  const vence      = document.getElementById('deuda-vencimiento').value;
+  const interes    = parseFloat(document.getElementById('deuda-interes').value) || 0;
+  const notas      = document.getElementById('deuda-notas').value.trim();
+
+  if (!desc)           { showToast('Ingresa una descripción', 'error'); return; }
+  if (!total || total <= 0) { showToast('El monto total debe ser mayor a 0', 'error'); return; }
+
+  const btn = document.getElementById('btn-guardar-deuda');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  try {
+    const body = { descripcion: desc, acreedor, tipo, monto_total: total, monto_pagado: pagado,
+                   tasa_interes: interes, fecha_vencimiento: vence || null, notas };
+    if (id) {
+      await PUT(`/deudas/${id}`, body);
+      showToast('Deuda actualizada');
+    } else {
+      await POST('/deudas', body);
+      showToast('Deuda registrada');
+    }
+    closeModal('modal-deuda');
+    resetFormDeuda();
+    await renderDeudas();
+    renderDashboard();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar Deuda';
+  }
+}
+
+function resetFormDeuda() {
+  ['deuda-edit-id','deuda-desc','deuda-acreedor','deuda-notas','deuda-vencimiento'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('deuda-pagado').value  = '0';
+  document.getElementById('deuda-interes').value = '0';
+  document.getElementById('modal-deuda-title').textContent = 'Nueva Deuda';
+}
+
+async function editarDeuda(id) {
+  try {
+    const deudas = await GET('/deudas');
+    const d = deudas.find(x => x.id === id);
+    if (!d) return;
+    document.getElementById('deuda-edit-id').value     = id;
+    document.getElementById('deuda-desc').value        = d.descripcion;
+    document.getElementById('deuda-acreedor').value    = d.acreedor || '';
+    document.getElementById('deuda-tipo').value        = d.tipo;
+    document.getElementById('deuda-total').value       = d.monto_total;
+    document.getElementById('deuda-pagado').value      = d.monto_pagado;
+    document.getElementById('deuda-vencimiento').value = d.fecha_vencimiento ? d.fecha_vencimiento.substring(0,10) : '';
+    document.getElementById('deuda-interes').value     = d.tasa_interes;
+    document.getElementById('deuda-notas').value       = d.notas || '';
+    document.getElementById('modal-deuda-title').textContent = 'Editar Deuda';
+    openModal('modal-deuda');
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+async function eliminarDeuda(id) {
+  if (!confirm('¿Eliminar esta deuda?')) return;
+  try {
+    await DELETE(`/deudas/${id}`);
+    showToast('Deuda eliminada');
+    await renderDeudas();
+    renderDashboard();
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+// Pago parcial
+function abrirPagoDeuda(id, nombre, pendiente) {
+  document.getElementById('pago-deuda-id').value    = id;
+  document.getElementById('pago-deuda-nombre').textContent   = nombre;
+  document.getElementById('pago-deuda-pendiente').textContent = fmt(pendiente);
+  document.getElementById('pago-monto').value  = '';
+  document.getElementById('pago-notas').value  = '';
+  openModal('modal-pago-deuda');
+}
+
+async function guardarPagoDeuda() {
+  const id      = document.getElementById('pago-deuda-id').value;
+  const monto   = parseFloat(document.getElementById('pago-monto').value);
+  const cuentaId= document.getElementById('pago-cuenta').value || null;
+  const notas   = document.getElementById('pago-notas').value.trim();
+
+  if (!monto || monto <= 0) { showToast('Ingresa un monto válido', 'error'); return; }
+
+  try {
+    await POST(`/deudas/${id}/pago`, { monto, cuenta_id: cuentaId ? parseInt(cuentaId) : null, notas });
+    showToast('Pago registrado correctamente');
+    closeModal('modal-pago-deuda');
+    await renderDeudas();
+    if (cuentaId) await renderCuentas();
+    renderDashboard();
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+// ════════════════════════════════════════════════════════
+//  RECORDATORIOS
+// ════════════════════════════════════════════════════════
+async function renderRecordatorios() {
+  const cont = document.getElementById('lista-recordatorios');
+  cont.innerHTML = '<div class="loading card"><div class="spinner"></div>Cargando...</div>';
+  try {
+    const recs = await GET('/recordatorios');
+    if (!recs.length) {
+      cont.innerHTML = '<div class="empty-state card"><div class="es-emoji">🔔</div><p>Agrega tu primer recordatorio</p></div>';
+      return;
+    }
+    cont.innerHTML = recs.map(r => `
+      <div class="reminder-card ${r.urgencia}">
+        <div class="reminder-day"><div class="day-num">${r.dia_mes}</div><div class="day-label">cada mes</div></div>
+        <div class="reminder-info">
+          <div class="reminder-name">${esc(r.nombre)}</div>
+          <div class="reminder-sub">
+            ${r.categoria}
+            ${r.notas ? ' · ' + esc(r.notas) : ''}
+            <span style="margin-left:4px;font-size:11px;color:var(--text-muted)">· ${
+              r.estado_dia === 'hoy' ? '📍 Hoy!' :
+              r.estado_dia === 'proximo' ? `⚡ En ${r.dias_para_pago} días` :
+              r.estado_dia === 'pasado' ? 'Ya pasó' :
+              `En ${r.dias_para_pago} días`
+            }</span>
+          </div>
+        </div>
+        ${r.monto_estimado > 0 ? `<div class="reminder-amount">${fmt(r.monto_estimado)}</div>` : ''}
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <button class="btn btn-outline btn-xs" onclick="editarRecordatorio(${r.id})">✏️</button>
+          <button class="btn btn-danger btn-xs" onclick="eliminarRecordatorio(${r.id})">🗑️</button>
+        </div>
+      </div>`).join('');
+  } catch (err) {
+    cont.innerHTML = `<div class="empty-state card"><p>Error: ${err.message}</p></div>`;
+  }
+}
+
+async function guardarRecordatorio() {
+  const id      = document.getElementById('rec-edit-id').value;
+  const nombre  = document.getElementById('rec-nombre').value.trim();
+  const dia     = parseInt(document.getElementById('rec-dia').value);
+  const cat     = document.getElementById('rec-categoria').value;
+  const monto   = parseFloat(document.getElementById('rec-monto').value) || 0;
+  const urg     = document.getElementById('rec-urgencia').value;
+  const notas   = document.getElementById('rec-notas').value.trim();
+
+  if (!nombre)            { showToast('Ingresa el nombre del pago', 'error'); return; }
+  if (!dia||dia<1||dia>31){ showToast('Día inválido (1-31)', 'error'); return; }
+
+  const btn = document.getElementById('btn-guardar-rec');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  try {
+    const body = { nombre, categoria: cat, dia_mes: dia, monto_estimado: monto, urgencia: urg, notas };
+    if (id) {
+      await PUT(`/recordatorios/${id}`, body);
+      showToast('Recordatorio actualizado');
+    } else {
+      await POST('/recordatorios', body);
+      showToast('Recordatorio guardado');
+    }
+    closeModal('modal-recordatorio');
+    resetFormRec();
+    await renderRecordatorios();
+    renderDashboard();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar Recordatorio';
+  }
+}
+
+function resetFormRec() {
+  ['rec-edit-id','rec-nombre','rec-dia','rec-monto','rec-notas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('modal-rec-title').textContent = 'Nuevo Recordatorio';
+}
+
+async function editarRecordatorio(id) {
+  try {
+    const recs = await GET('/recordatorios');
+    const r = recs.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('rec-edit-id').value   = id;
+    document.getElementById('rec-nombre').value    = r.nombre;
+    document.getElementById('rec-dia').value       = r.dia_mes;
+    document.getElementById('rec-categoria').value = r.categoria;
+    document.getElementById('rec-monto').value     = r.monto_estimado;
+    document.getElementById('rec-urgencia').value  = r.urgencia;
+    document.getElementById('rec-notas').value     = r.notas || '';
+    document.getElementById('modal-rec-title').textContent = 'Editar Recordatorio';
+    openModal('modal-recordatorio');
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+async function eliminarRecordatorio(id) {
+  if (!confirm('¿Eliminar este recordatorio?')) return;
+  try {
+    await DELETE(`/recordatorios/${id}`);
+    showToast('Recordatorio eliminado');
+    await renderRecordatorios();
+    renderDashboard();
+  } catch (err) { showToast(err.message, 'error'); }
+}
+
+// ════════════════════════════════════════════════════════
+//  RESUMEN GENERAL
+// ════════════════════════════════════════════════════════
+async function renderResumen() {
+  try {
+    const d = await GET('/dashboard/resumen');
+
+    document.getElementById('res-activos').textContent = fmt(d.totales.activos);
+    document.getElementById('res-deudas').textContent  = fmt(d.totales.deudas);
+    const netoEl = document.getElementById('res-neto');
+    netoEl.textContent = fmt(d.totales.patrimonio);
+    netoEl.className   = 'stat-value' + (d.totales.patrimonio < 0 ? ' neg' : '');
+
+    // Gráfico por categoría
+    const grafCat = document.getElementById('graf-cat');
+    if (!d.catGastos.length) {
+      grafCat.innerHTML = '<div class="empty-state"><p>Sin gastos registrados</p></div>';
+    } else {
+      const max = d.catGastos[0].total;
+      grafCat.innerHTML = d.catGastos.map(c => `
+        <div class="chart-bar-row">
+          <div class="chart-label">${c.categoria}</div>
+          <div class="chart-bar-wrap"><div class="chart-bar-fill" style="width:${Math.round((c.total/max)*100)}%"></div></div>
+          <div class="chart-value">${fmt(c.total)}</div>
+        </div>`).join('');
+    }
+
+    // Distribución por cuenta
+    const grafCuenta = document.getElementById('graf-cuentas');
+    if (!d.cuentas.length) {
+      grafCuenta.innerHTML = '<div class="empty-state"><p>Sin cuentas</p></div>';
+    } else {
+      const maxS = Math.max(...d.cuentas.map(c => Math.abs(c.saldo))) || 1;
+      grafCuenta.innerHTML = d.cuentas.map(c => `
+        <div class="chart-bar-row">
+          <div class="chart-label">${TIPO_EMOJI[c.tipo]} ${esc(c.nombre)}</div>
+          <div class="chart-bar-wrap"><div class="chart-bar-fill ${c.saldo < 0 ? 'danger':''}" style="width:${Math.round((Math.abs(c.saldo)/maxS)*100)}%"></div></div>
+          <div class="chart-value ${c.saldo < 0 ? 'neg':''}">${fmt(c.saldo, c.moneda)}</div>
+        </div>`).join('');
+    }
+
+    // Por mes
+    const grafMes = document.getElementById('graf-mes');
+    if (!d.porMes.length) {
+      grafMes.innerHTML = '<div class="empty-state"><p>Sin datos mensuales</p></div>';
+    } else {
+      const maxM = Math.max(...d.porMes.map(m => m.total)) || 1;
+      grafMes.innerHTML = d.porMes.map(m => `
+        <div class="chart-bar-row">
+          <div class="chart-label">${m.periodo}</div>
+          <div class="chart-bar-wrap"><div class="chart-bar-fill" style="width:${Math.round((m.total/maxM)*100)}%"></div></div>
+          <div class="chart-value">${fmt(m.total)} <span style="font-size:10px;color:var(--text-muted)">(${m.cantidad})</span></div>
+        </div>`).join('');
+    }
+
+  } catch (err) {
+    showToast('Error al cargar resumen: ' + err.message, 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  UTILIDADES
+// ════════════════════════════════════════════════════════
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+
+
+// ════════════════════════════════════════════════════════
+//  INICIALIZACIÓN
+// ════════════════════════════════════════════════════════
+async function init() {
+  // Fecha por defecto en form de gastos
+  const fechaEl = document.getElementById('gasto-fecha');
+  if (fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
+
+  // Verificar estado de la API
+  await checkApiStatus();
+
+  // Cargar cuentas en caché para los selects
+  try { await getCuentas(); } catch {}
+
+  // Render inicial del dashboard
+  await renderDashboard();
+
+  // Re-verificar estado cada 30 segundos
+  setInterval(checkApiStatus, 30000);
+}
+
+// ════════════════════════════════════════════════════════
+//  BOOTSTRAP — verificar sesión al cargar la página
+// ════════════════════════════════════════════════════════
+(async function bootstrap() {
+  if (Auth.isLoggedIn()) {
+    // Verificar que el token sigue siendo válido
+    try {
+      const res = await fetch(API + '/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + Auth.token }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Actualizar datos del usuario en caso de cambio
+        Auth.set(Auth.token, data.usuario);
+        showApp();
+        await init();
+        return;
+      }
+    } catch {}
+    // Token inválido
+    Auth.clear();
+  }
+  // No hay sesión válida → mostrar auth
+  showAuth();
+})();
+</script>
+</body>
+</html>
